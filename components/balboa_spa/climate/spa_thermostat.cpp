@@ -14,9 +14,9 @@ namespace esphome
         static const uint8_t HEATING_MODE_REST = 1;
         static const uint8_t HEATING_MODE_READY_IN_REST = 3;
 
-        static const std::string PRESET_READY = "Ready";
-        static const std::string PRESET_REST = "Rest";
-        static const std::string PRESET_READY_IN_REST = "Ready in Rest";
+        static const char *const PRESET_READY = "Ready";
+        static const char *const PRESET_REST = "Rest";
+        static const char *const PRESET_READY_IN_REST = "Ready in Rest";
 
         void BalboaSpaThermostat::apply_range_limits_to_traits(climate::ClimateTraits &traits, bool high_range)
         {
@@ -31,6 +31,12 @@ namespace esphome
                 traits.set_visual_max_temperature(this->low_range_max_);
             }
             traits.set_visual_temperature_step(0.5f);
+        }
+
+        void BalboaSpaThermostat::setup()
+        {
+            // Custom presets live on the Climate base, not on traits. Set once at component setup.
+            this->set_supported_custom_presets({PRESET_READY, PRESET_REST, PRESET_READY_IN_REST});
         }
 
         climate::ClimateTraits BalboaSpaThermostat::traits()
@@ -49,7 +55,6 @@ namespace esphome
                 // New: HEAT only (Hold lives on the dedicated switch). Heating mode via custom_preset.
                 traits.set_supported_modes({climate::CLIMATE_MODE_HEAT});
             }
-            traits.set_supported_custom_presets({PRESET_READY, PRESET_REST, PRESET_READY_IN_REST});
 
             traits.add_feature_flags(climate::CLIMATE_SUPPORTS_ACTION | climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
 
@@ -78,9 +83,9 @@ namespace esphome
             }
 
             // custom_preset: Ready / Rest are settable. Ready in Rest is read-only — selecting it is rejected.
-            if (call.get_custom_preset().has_value())
+            if (call.has_custom_preset())
             {
-                const std::string &requested = *call.get_custom_preset();
+                StringRef requested = call.get_custom_preset();
                 uint8_t current = spa->get_heating_mode_raw();
 
                 if (requested == PRESET_READY_IN_REST)
@@ -191,7 +196,7 @@ namespace esphome
             }
 
             // New custom_preset reflecting Balboa heating mode.
-            std::string new_custom_preset;
+            const char *new_custom_preset = nullptr;
             switch (spaState->rest_mode)
             {
             case HEATING_MODE_READY:
@@ -204,14 +209,14 @@ namespace esphome
                 new_custom_preset = PRESET_READY_IN_REST;
                 break;
             default:
-                new_custom_preset = "";
                 break;
             }
-            if (!new_custom_preset.empty())
+            if (new_custom_preset != nullptr)
             {
-                if (!this->custom_preset.has_value() || *this->custom_preset != new_custom_preset)
+                StringRef current_preset = this->get_custom_preset();
+                if (!this->has_custom_preset() || current_preset != new_custom_preset)
                 {
-                    this->custom_preset = new_custom_preset;
+                    this->set_custom_preset_(new_custom_preset);
                     needs_update = true;
                 }
             }

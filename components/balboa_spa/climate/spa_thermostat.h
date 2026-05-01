@@ -18,6 +18,7 @@ namespace esphome
         last_update_time = 0;
       };
 
+      void setup() override;
       void update(SpaState *spaState);
       void set_parent(BalboaSpa *parent);
       void set_legacy_hvac_modes(bool legacy) { legacy_hvac_modes_ = legacy; }

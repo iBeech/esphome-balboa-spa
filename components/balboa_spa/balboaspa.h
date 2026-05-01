@@ -83,7 +83,10 @@ namespace esphome
       void register_fault_log_listener(const std::function<void(SpaFaultLog *)> &func) { this->fault_log_listeners_.push_back(func); }
 
       bool get_restmode();
+      bool get_hold_mode();
+      uint8_t get_heating_mode_raw();
       void toggle_heat();
+      void toggle_hold();
       void request_config_update();
       void request_filter_settings_update();
       void request_fault_log_update();

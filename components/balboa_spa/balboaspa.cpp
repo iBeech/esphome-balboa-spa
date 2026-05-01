@@ -117,10 +117,26 @@ namespace esphome
             return spaState.rest_mode == 1;
         }
 
+        bool BalboaSpa::get_hold_mode()
+        {
+            return spaState.hold_mode == 1;
+        }
+
+        uint8_t BalboaSpa::get_heating_mode_raw()
+        {
+            return spaState.rest_mode;
+        }
+
         void BalboaSpa::toggle_heat()
         {
             ESP_LOGD("balboa_spa", "Send 0x51 to toggle heat/rest");
             send_command = 0x51;
+        }
+
+        void BalboaSpa::toggle_hold()
+        {
+            ESP_LOGD("balboa_spa", "Send 0x3C to toggle hold mode");
+            send_command = 0x3C;
         }
 
         void BalboaSpa::request_config_update()
@@ -789,6 +805,14 @@ namespace esphome
             {
                 ESP_LOGD(TAG, "Spa/cleanup_cycle/state: %.0f", spa_component_state);
                 spaState.cleanup_cycle = spa_component_state;
+            }
+
+            // 5:Flags Byte 0 - Spa status byte; 0x05 indicates Hold/Standby mode
+            spa_component_state = (input_queue[5] == 0x05) ? 1 : 0;
+            if (spa_component_state != spaState.hold_mode)
+            {
+                ESP_LOGD(TAG, "Spa/hold_mode/state: %.0f", spa_component_state);
+                spaState.hold_mode = spa_component_state;
             }
 
             // Parse reminder type from byte 6 of the status update (0x13 message)

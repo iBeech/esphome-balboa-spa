@@ -82,6 +82,12 @@ CONFIG_SCHEMA = cv.Schema(
         ),
     })
 
+_DEPRECATED_SENSORS = {
+    CONF_RESTMODE: "binary_sensor.restmode is deprecated; use the climate platform's custom_preset (Ready/Rest/Ready in Rest) instead.",
+    CONF_HIGHRANGE: "binary_sensor.highrange is deprecated; use the new select.temperature_range entity instead.",
+}
+
+
 async def to_code(config):
     parent = await cg.get_variable(config[CONF_SPA_ID])
 
@@ -92,6 +98,9 @@ async def to_code(config):
     ]
     for sensor_type in sensor_types:
         if conf := config.get(sensor_type):
+            if sensor_type in _DEPRECATED_SENSORS:
+                import logging
+                logging.getLogger(__name__).warning(_DEPRECATED_SENSORS[sensor_type])
             var = await binary_sensor.new_binary_sensor(conf)
             cg.add(var.set_parent(parent))
             sensor_type_value = getattr(SpaSensorTypeEnum, sensor_type.upper())

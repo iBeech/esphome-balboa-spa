@@ -18,6 +18,7 @@ namespace esphome
 
     protected:
       void control(const std::string &value) override;
+      void control(size_t index) override;
 
     private:
       BalboaSpa *spa = nullptr;

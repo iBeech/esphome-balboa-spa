@@ -647,6 +647,12 @@ namespace esphome
 
         void BalboaSpa::decodeState()
         {
+            // DEBUG: dump every flag byte we touch so we can see raw values for diagnosis.
+            // F0 (Flags 0) at body 0 = input_queue[5]; F2 at body 5 = input_queue[10];
+            // F3 at body 9 = input_queue[14]; F4 at body 10 = input_queue[15].
+            ESP_LOGD(TAG, "Spa/raw F0=0x%02X F2=0x%02X F3=0x%02X F4=0x%02X",
+                     input_queue[5], input_queue[10], input_queue[14], input_queue[15]);
+
             // 25:Flag Byte 20 - Set Temperature
             float temp_read = 0.0f;
 

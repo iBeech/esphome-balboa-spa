@@ -268,6 +268,7 @@ namespace esphome
 
         void SpaFilter2StartTimeText::control(const std::string &value)
         {
+            ESP_LOGD(TAG, "SpaFilter2StartTimeText::control() invoked with '%s'", value.c_str());
             uint8_t hour, minute;
             if (validate_time_format(value, hour, minute))
             {
@@ -330,6 +331,7 @@ namespace esphome
 
         void SpaFilter2DurationText::control(const std::string &value)
         {
+            ESP_LOGD(TAG, "SpaFilter2DurationText::control() invoked with '%s'", value.c_str());
             uint8_t hour, minute;
             if (validate_time_format(value, hour, minute))
             {

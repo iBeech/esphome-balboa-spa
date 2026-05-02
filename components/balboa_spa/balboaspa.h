@@ -62,6 +62,8 @@ namespace esphome
       void set_filter2_start_time(uint8_t hour, uint8_t minute);
       void set_filter2_duration(uint8_t hour, uint8_t minute);
       void disable_filter2();
+      void enable_filter2();
+      bool has_filter2_duration_configured();
       void toggle_light();
       void toggle_light2();
       void toggle_jet1();

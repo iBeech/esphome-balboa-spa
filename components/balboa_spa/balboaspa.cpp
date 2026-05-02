@@ -213,6 +213,25 @@ namespace esphome
             send_command = 0x25; // Filter configuration command
         }
 
+        void BalboaSpa::enable_filter2()
+        {
+            // Send 0x25 with current target_* (which mirror spa state plus any
+            // pending user changes), flipping the enable bit on. Caller is expected
+            // to have ensured a valid duration is configured.
+            target_filter2_enable = true;
+            send_command = 0x25;
+            ESP_LOGI(TAG, "Filter 2 enable requested with start %02d:%02d duration %02d:%02d",
+                     target_filter2_start_hour, target_filter2_start_minute,
+                     target_filter2_duration_hour, target_filter2_duration_minute);
+        }
+
+        bool BalboaSpa::has_filter2_duration_configured()
+        {
+            // Either the user has staged a non-zero duration (via set_filter2_duration)
+            // or the spa has previously reported one (via decode mirror).
+            return (target_filter2_duration_hour != 0 || target_filter2_duration_minute != 0);
+        }
+
         void BalboaSpa::set_filter1_start_time(uint8_t hour, uint8_t minute)
         {
             if (hour < 24 && minute < 60)

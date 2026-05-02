@@ -170,7 +170,23 @@ namespace esphome
             needs_update = is_diff_no_nan(current_temp, this->current_temperature) || needs_update;
             this->current_temperature = !std::isnan(current_temp) ? current_temp : this->current_temperature;
 
-            auto new_action = spaState->heat_state == 1 ? climate::CLIMATE_ACTION_HEATING : climate::CLIMATE_ACTION_IDLE;
+            // Action mapping:
+            //   HEATING — heater is actively firing (any mode, including filter-cycle bursts in Rest)
+            //   OFF     — heating mode is Rest and heater is not firing (visually "off" on the tile)
+            //   IDLE    — Ready / Ready in Rest, heater not currently firing
+            climate::ClimateAction new_action;
+            if (spaState->heat_state == 1)
+            {
+                new_action = climate::CLIMATE_ACTION_HEATING;
+            }
+            else if (spaState->rest_mode == HEATING_MODE_REST)
+            {
+                new_action = climate::CLIMATE_ACTION_OFF;
+            }
+            else
+            {
+                new_action = climate::CLIMATE_ACTION_IDLE;
+            }
             needs_update = new_action != this->action || needs_update;
             this->action = new_action;
 

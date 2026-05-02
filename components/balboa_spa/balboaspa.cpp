@@ -847,6 +847,21 @@ namespace esphome
             spaFilterSettings.filter2_duration_hour = input_queue[11];
             spaFilterSettings.filter2_duration_minute = input_queue[12];
 
+            // Mirror decoded values into the write-side targets so that a partial set_*
+            // operation (e.g. set_filter2_start_time alone) preserves the other fields
+            // when the 0x25 message is built. Without this, untouched fields would be
+            // sent as zero and the spa would either reject the message or store zero
+            // durations.
+            target_filter1_start_hour = spaFilterSettings.filter1_hour;
+            target_filter1_start_minute = spaFilterSettings.filter1_minute;
+            target_filter1_duration_hour = spaFilterSettings.filter1_duration_hour;
+            target_filter1_duration_minute = spaFilterSettings.filter1_duration_minute;
+            target_filter2_enable = spaFilterSettings.filter2_enable;
+            target_filter2_start_hour = spaFilterSettings.filter2_hour;
+            target_filter2_start_minute = spaFilterSettings.filter2_minute;
+            target_filter2_duration_hour = spaFilterSettings.filter2_duration_hour;
+            target_filter2_duration_minute = spaFilterSettings.filter2_duration_minute;
+
             // Filter 1 time conversion
             static PROGMEM const char *format_string = R"({"start":"%.2i:%.2i","duration":"%.2i:%.2i"} )";
             const auto payload_length = std::snprintf(nullptr, 0, format_string, spaFilterSettings.filter1_hour, spaFilterSettings.filter1_minute, spaFilterSettings.filter1_duration_hour, spaFilterSettings.filter1_duration_minute);

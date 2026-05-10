@@ -1,4 +1,5 @@
 #include "balboaspa.h"
+#include "esphome/components/wifi/wifi_component.h"
 
 namespace esphome
 {
@@ -21,6 +22,21 @@ namespace esphome
 
         void BalboaSpa::update()
         {
+            // BOOT-TIME GATE: skip all UART/spa processing until WiFi has
+            // associated with the home AP. BP21 streams ~10 packets/sec to
+            // UART RX from the moment it powers on; without this gate, that
+            // traffic hammers the CPU during ESP boot and prevents the WiFi
+            // 4-way handshake from completing in its timing-critical
+            // window. Once WiFi is up, BP21 traffic is harmless. Verified
+            // 2026-05-10: WiFi joins fine when BP21 is not yet active;
+            // fails when BP21 is already streaming during ESP cold boot.
+            // In fallback AP mode is_connected() is false too, but spa
+            // processing isn't useful then anyway.
+            if (esphome::wifi::global_wifi_component == nullptr ||
+                !esphome::wifi::global_wifi_component->is_connected()) {
+                return;
+            }
+
             uint32_t now = millis();
             if (last_received_time + 10000 < now)
             {
